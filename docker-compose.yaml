@@ -1,0 +1,40 @@
+version: "3.8"
+services:
+  app:
+    container_name: mobile-app
+    working_dir: /server
+    build:
+      context: .
+      args:
+        DOCKER_BUILDKIT: 1
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./:/server
+  postgres:
+    container_name: mobile-db
+    image: ankane/pgvector
+    ports:
+      - "5432:${DB_PORT}"
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: raidrockstar040@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: lol
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+volumes:
+  pgdata:
+  pgadmin-data:
