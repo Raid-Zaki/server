@@ -2,8 +2,8 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from database.create_tables import Posts
-from schemas.models import DeletePostResponse, Post, UpdatePost
+from database.tables import Posts
+from models.posts import DeletePostResponse, Post, UpdatePost
 
 
 def post_create(db: Session, post: Post):
