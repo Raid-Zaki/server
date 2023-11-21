@@ -4,11 +4,9 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
-class HealthResponse(BaseModel):
-    status: str
-
 
 class Post(BaseModel):
+    """The post model."""
     id: Optional[UUID]
     title: str
     description: str
