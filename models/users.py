@@ -7,6 +7,8 @@ class Token(BaseModel):
   
 class TokenData(BaseModel):
     username: str | None = None
+    
+
 
 class UserForm(BaseModel):
     username: Annotated[str, StringConstraints(strip_whitespace=True,min_length=3, max_length=50)]
@@ -23,7 +25,6 @@ class UserForm(BaseModel):
         return self
 class User(BaseModel):
     id: Optional[UUID]
-    
     username: str
     email: str
     full_name: str
@@ -31,6 +32,6 @@ class User(BaseModel):
     class Config:
         from_attributes = True
         
-class UserSignUp(BaseModel):
+class UserSignUpResponse(BaseModel):
     user:User 
     token:Token
