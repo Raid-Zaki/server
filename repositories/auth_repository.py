@@ -9,7 +9,9 @@ import os
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from database.tables import Users
-from models.users import TokenData, UserForm
+from models.auth import SignUpForm, TokenData
+from utils.form_helper import FormHelper
+
 
 class AuthRepository:
     
@@ -27,15 +29,29 @@ class AuthRepository:
         return self.pwd_context.hash(password)
     def get_user_by_username(self,db:Session, username: str):
         return db.query(Users).filter(Users.username == username).first()
-
-    def authenticate_user_by_username(self,db:Session, username: str, password: str):
-
-        user = self.get_user_by_username(db, username)
+    def get_user_by_email(self,db:Session, email: str):
+        return db.query(Users).filter(Users.email == email).first()
+    
+    
+    
+    def authenticate_user(self,db:Session, cred: str, password: str):
+        if FormHelper.is_valid_email(cred):
+            user = self.get_user_by_email(db, cred)
+        else:
+            user = self.get_user_by_username(db, cred)
         if not user:
             return False
         if not self.verify_password(password, user.hashed_password):
             return False
         return user
+    
+    def infer_user_login_method(self,db:Session,cred:str)->Users|None:
+        if FormHelper.is_valid_email(cred):
+            user = self.get_user_by_email(db=db, email=cred)
+        else:
+            user = self.get_user_by_username(db=db, username=cred)
+        return user
+    
     def create_access_token(self,data: dict, expires_delta: timedelta | None = None):
         to_encode = data.copy()
         if expires_delta:
@@ -54,22 +70,21 @@ class AuthRepository:
         )
         try:
             payload = jwt.decode(token, self.__SECRET_KEY, algorithms=[self.__ALGORITHM])
-            username: str = payload.get("sub")
-            if username is None:
+            cred: str = payload.get("sub")
+            if cred is None:
                 raise credentials_exception
-            token_data = TokenData(username=username)
+            token_data = TokenData(cred=cred)
         except JWTError:
-            raise credentials_exception
-        user = self.get_user_by_username(db=db, username=token_data.username)
+            raise credentials_exception      
+        user=self.infer_user_login_method(db=db,cred=token_data.cred)
         if user is None:
             raise credentials_exception
         return user
 
-    def create_user(self,db: Session, user: UserForm):
+    def create_user(self,db: Session, user: SignUpForm):
         db_user = Users(
             username=user.username,
             email=user.email,
-            full_name=user.full_name,
             hashed_password=self.get_password_hash(user.password),
         )
         db.add(db_user)
