@@ -2,16 +2,35 @@
 
 
 class users{
-
     id:uuid
     username:string 
     email:string 
     hashed_password:string 
     created_at:Date
     updated_at:Date
-
 }
 
+class chats{
+    id:uuid
+    user_id:uuid
+    created_at:Date
+    updated_at:Date
+}
+
+class medias{
+    id:uuid
+    chat_id:uuid
+    media_type_id:
+    content:string
+    created_at:Date
+    updated_at:Date
+}
+
+class media_types{
+    id:uuid
+    name:string
+
+}
 
 
 @enduml

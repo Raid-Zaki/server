@@ -11,11 +11,11 @@ RUN pip install poetry==1.7.1
 
 COPY pyproject.toml ./
 
+
 RUN poetry config virtualenvs.create false \
     && poetry install
 
 RUN poetry lock
 
-RUN poetry shell
 COPY . .
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

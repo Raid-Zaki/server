@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-#langchain = "^0.0.345"
+langchain = "^0.0.348"
 
 fastapi = "^0.104.1"
 passlib = { version = "^1.7.4", extras = ["bcrypt"] }
