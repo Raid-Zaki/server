@@ -1,11 +1,11 @@
-from typing import List,Annotated
+from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database.connection import get_db
 from models.posts import DeletePostResponse, Post, UpdatePost
-from utils.post_crud import (
+from repositories.post_repository import (
     post_create,
     post_delete,
     post_get_one,
