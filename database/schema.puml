@@ -1,0 +1,17 @@
+@startuml
+
+
+class users{
+
+    id:uuid
+    username:string 
+    email:string 
+    hashed_password:string 
+    created_at:Date
+    updated_at:Date
+
+}
+
+
+
+@enduml

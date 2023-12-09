@@ -20,11 +20,13 @@ class AuthController:
             data={"sub": user_data.cred}, expires_delta=access_token_expires
         )
         return Token(access_token=access_token)
+    
     @staticmethod
     def signup(user: SignUpForm, db: Session ):
         user= AuthController.auth_repository.create_user(db=db, user=user)
         access_token=AuthController.auth_repository.create_access_token(data={"sub": user.email})
         return SignUpResponse(user=user,token=Token(access_token=access_token))
+    
     @staticmethod
     def user_info(current_user: User):
         return current_user
