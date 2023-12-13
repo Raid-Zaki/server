@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routes.post_router import router as post_router
 from routes.auth_router import router as auth_router
-from routes.test_router import router as test_router
+from routes.media_router import router as media_router
 from models.core import HealthResponse
 app = FastAPI()
 origins = ["*"]
@@ -19,7 +19,7 @@ app.add_middleware(
 
 app.include_router(router=post_router, prefix="/posts")
 app.include_router(router=auth_router, prefix="/auth")
-app.include_router(router=test_router, prefix="/tests")
+app.include_router(router=media_router,prefix="/medias")
 @app.get("/", response_model=HealthResponse)
 async def health():
     return HealthResponse(status="Ok")

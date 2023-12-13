@@ -13,7 +13,6 @@ from repositories.post_repository import (
     posts_get_all,
 )
 router = APIRouter(tags=["posts"])
-
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=Post)
 async def create_post(post: Post, db: Session = Depends(get_db)):
     return post_create(db=db, post=post)

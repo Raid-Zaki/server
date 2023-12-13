@@ -20,7 +20,7 @@ docker compose up
 
 and check http://localhost:8000/docs
 
-# To access the pgadmin visit localhost:8888 & enter
+# To access the pgadmin visit localhost:9001 & enter
 
     email:raidrockstar040@gmil.com
     password:lol

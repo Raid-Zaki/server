@@ -10,8 +10,9 @@ RUN pip install poetry==1.7.1
 
 COPY pyproject.toml ./
 
-RUN poetry config virtualenvs.create false \
-    && poetry install
+RUN poetry config virtualenvs.create false 
+
+RUN poetry install
 
 RUN poetry lock
 
