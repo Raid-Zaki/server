@@ -1,0 +1,65 @@
+@startuml
+
+
+class users{
+    id:uuid
+    username:string 
+    email:string 
+    hashed_password:string 
+    created_at:Date
+    updated_at:Date
+}
+class media_types{
+    id:uuid
+    name:string
+}
+
+class tasks{
+
+    id:uuid
+    name:string
+}
+
+class medias{
+    id:uuid
+    user_id:uuid
+    media_type_id:
+    content:string
+    "title":string
+    created_at:Date
+    updated_at:Date
+}
+
+class chats{
+    id:uuid
+    media_id:uuid
+    created_at:Date
+    updated_at:Date
+}
+
+
+class chat_meesages{
+    id:uuid
+    chat_id:uuid
+    human_question:string
+    bot_answer:string
+    created_at:Date
+    updated_at:Date
+}
+
+
+
+
+' class langchain_pg_embedding{
+'     id:uuid(primary)
+'     embedding:float[]
+'     collection_id:uuid
+' }
+
+' class media_embeddings{
+'     media_id:uuid
+'     collection_id:uuid
+' }
+
+
+@enduml
