@@ -33,7 +33,7 @@ follow these steps
 
 ```bash
 source activate .venv/bin/activate
-uvicorn main:app  --port 8000
+uvicorn main:app  --port 8000 --reload  --reload-exclude .venv/
 ```
 
 6. and check http://localhost:8000/docs

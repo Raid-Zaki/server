@@ -12,16 +12,12 @@ class Embedder:
    
     
     COLLECTION_NAME="media_embeddings"
-    def __init__(self,media:UploadFile,spliter:Splitters=Splitters.SENTENCE,embedder:Embedders=Embedders.FLAN_SMALL):
+    def __init__(self,media:UploadFile,spliter:Splitters=Splitters.SENTENCE,embedder_name:Embedders=Embedders.FLAN_SMALL):
         self.media = media
-        self.model_name=embedder.value
+        self.model_name=embedder_name.value
         self.document_splitter = self.splitter_factory(spliter)
-        self.embedder = HuggingFaceBgeEmbeddings(model_name=embedder.value)
-    def __await__(self):
-        return self.create().__await__()
-    async def create(self):
-        self.document_loader=await self.loader_factory()
-        return self
+        self.embedder = HuggingFaceBgeEmbeddings(model_name=embedder_name.value)
+   
     async def loader_factory(self):
 
         if self.media.content_type == "application/pdf":
@@ -46,15 +42,18 @@ class Embedder:
             return TokenTextSplitter()
     
     
-    def embedd(self):
-        documents = self.document_loader.load_and_split()
+    async def embedd(self):
+        
+        document_loader = await self.loader_factory()
+        documents = document_loader.load_and_split()
         documents = self.document_splitter.split(documents)
         dotenv.load_dotenv()
         db = PGVector.from_documents(embedding=self.embedder, documents=documents, connection_string=DATABASE_URL, collection_name=Embedder.COLLECTION_NAME)
         db.insert()
         return db
-    def pipeline(self,query:str):
-        documents = self.document_loader.load_and_split()
+    async def pipeline(self,query:str):
+        document_loader=await self.loader_factory()
+        documents = document_loader.load_and_split()
         documents = self.document_splitter.split(documents)
         dotenv.load_dotenv()
         db = PGVector.from_documents(embedding=self.embedder, documents=documents, connection_string=DATABASE_URL, collection_name=Embedder.COLLECTION_NAME)

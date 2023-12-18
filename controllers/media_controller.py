@@ -10,7 +10,7 @@ class MediaController:
     
     @staticmethod
     async def  upload_media(data: UploadForm,user:User, db: Session,file:UploadFile):
-    
-        embedder=await Embedder(file)
+        embedder=await  Embedder(file)
         return embedder.embedd()
+       
         
