@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app import lifespan
 from routes.post_router import router as post_router
 from routes.auth_router import router as auth_router
 from routes.media_router import router as media_router
@@ -7,7 +8,7 @@ from models.core import HealthResponse
 
 
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 origins = ["*"]
 app.add_middleware(
     CORSMiddleware,

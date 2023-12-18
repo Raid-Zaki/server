@@ -21,7 +21,7 @@ class AuthRepository:
         dotenv.load_dotenv()
         self.__SECRET_KEY = os.getenv("SECRET_KEY")
         self.__ALGORITHM = "HS256"
-        self.ACCESS_TOKEN_EXPIRE_MINUTES = 30
+        self.ACCESS_TOKEN_EXPIRE_MINUTES = 30*30
     
     def verify_password(self,plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)
