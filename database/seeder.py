@@ -1,7 +1,15 @@
 from faker import Faker
 from sqlalchemy.orm import Session
+import sys
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
 from database.connection import get_db
 from tables import Tasks, Users, MediaTypes, Medias, Chats, Messages
+
+   
 
 fake = Faker()
 
@@ -16,7 +24,8 @@ def seed_users(session: Session, num_users=5):
         users.append(user)
     session.add_all(users)
     session.commit()
-
+ 
+  
 def seed_media_types(session: Session):
     image_type = MediaTypes(name="Image")
     video_type = MediaTypes(name="Video")

@@ -8,4 +8,4 @@ class Splitters(Enum):
     
 class Embedders(Enum):
     
-    HF = "huggingface"
+    FLAN_SMALL= "google/flan-t5-small"
