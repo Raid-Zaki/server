@@ -24,8 +24,8 @@ class Users(Base):
     created_at = Column(TIMESTAMP,default=datetime.now())
     updated_at = Column(TIMESTAMP,default=datetime.now())
     
-    medias:Mapped[List["Medias"]] = relationship("Medias")
-    chats:Mapped[List["Chats"]] = relationship("Chats",secondary="medias")
+    medias:Mapped[List["Medias"]] = relationship("Medias",)
+    chats:Mapped[List["Chats"]] = relationship("Chats",secondary="medias",overlaps="medias")
     
 class MediaTypes(Base):
     __tablename__ = "media_types"
@@ -33,7 +33,7 @@ class MediaTypes(Base):
     name = Column(String,nullable=False)
     
     medias:Mapped[List["Medias"]] = relationship("Medias")
-    chats:Mapped[List["Chats"]] = relationship("Chats",secondary="medias")
+    chats:Mapped[List["Chats"]] = relationship("Chats",secondary="medias",overlaps="medias,chats")
     
 class Tasks(Base):
     __tablename__ = "tasks"
@@ -57,9 +57,9 @@ class Medias(Base):
     created_at = Column(TIMESTAMP,default=datetime.now())
     updated_at = Column(TIMESTAMP,default=datetime.now())
     "relationships"
-    user:Mapped["Users"] = relationship("Users")
-    chats:Mapped[List["Chats"]] = relationship("Chats")
-    mediaType:Mapped["MediaTypes"]=relationship("MediaTypes")
+    user:Mapped["Users"] = relationship("Users",overlaps="chats,medias")
+    chats:Mapped[List["Chats"]] = relationship("Chats",overlaps="chats,chats")
+    mediaType:Mapped["MediaTypes"]=relationship("MediaTypes",overlaps="chats,medias")
     
     
 
@@ -73,10 +73,10 @@ class Chats(Base):
     created_at = Column(TIMESTAMP,default=datetime.now())
     updated_at = Column(TIMESTAMP,default=datetime.now())
     
-    media:Mapped["Medias"]=relationship("Medias")
-    user:Mapped["Users"]=relationship("Users",secondary="medias")
+    media:Mapped["Medias"]=relationship("Medias",overlaps="chats,chats,chats")
+    user:Mapped["Users"]=relationship("Users",secondary="medias",overlaps="chats,media,chats,user,medias")
     messages:Mapped[List["Messages"]] =relationship("Messages")
-    taks:Mapped["Tasks"]=relationship("Tasks")
+    taks:Mapped["Tasks"]=relationship("Tasks",overlaps="chats")
     
 class Messages(Base):
     __tablename__ = "messages"
@@ -88,8 +88,8 @@ class Messages(Base):
     created_at = Column(TIMESTAMP,default=datetime.now())
     updated_at = Column(TIMESTAMP,default=datetime.now())
     
-    chat:Mapped["Chats"] =relationship("Chats")
-    media:Mapped["Medias"] =relationship("Medias",secondary="chats")
+    chat:Mapped["Chats"] =relationship("Chats",overlaps="messages,chats,chats,chats")
+    media:Mapped["Medias"] =relationship("Medias",secondary="chats",overlaps="chat,messages,media,user,chats,chats,chats")
     # user:Mapped["Users"] =relationship("Users",secondary="medias")
 
 
