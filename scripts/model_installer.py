@@ -2,11 +2,9 @@ import os,sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)   
+from langchain.embeddings import HuggingFaceBgeEmbeddings
 import dotenv
-from fastapi import UploadFile
-
-from services.embedder import Embedder
-from utils.enums import Embedders, Splitters
+from utils.enums import Embedders
 
 
 if __name__ == "__main__":
@@ -20,9 +18,6 @@ if __name__ == "__main__":
         os.rmdir(cache_dir)
 
     for model in models:
+        model=HuggingFaceBgeEmbeddings(model_name=model.value,cache_folder=cache_dir)
+      
         
-        data=UploadFile(file=open("temp/files.txt","rb"))
-        embedder=Embedder(media=UploadFile(file=open("temp/files.txt","rb")),embedder_name=model,
-                      spliter=Splitters.CHAR)
-        
-        print(embedder.embedd())

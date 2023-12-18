@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, UploadFile, status,File,Form
+from fastapi import APIRouter, Depends, UploadFile, status,Form
 from controllers.media_controller import MediaController
 from database.connection import get_db
 from models.medias import UploadForm
