@@ -13,6 +13,7 @@ transformers = "^4.35.2"
 Faker = "^20.1.0"
 sentence-transformers = "^2.2.2"
 bitsandbytes = "^0.41.3"
+pgvector = "^0.2.4"
 accelerate = "^0.25.0"
 
 fastapi = "^0.104.1"
