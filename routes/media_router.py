@@ -14,5 +14,4 @@ router = APIRouter(tags=["medias"])
 
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
 async def upload_media(data:Annotated[Json[UploadForm], Form()],db: Annotated[Session, Depends(get_db)],user:Annotated[User,Depends(AuthRepository().get_current_user)],file: UploadFile = None ):
-    
     return await MediaController.upload_media(data=data,db=db,user=user,file=file)

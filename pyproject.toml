@@ -7,13 +7,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-#langchain = "^0.0.348"
-#huggingface-hub = "^0.19.4"
-#transformers = "^4.35.2"
+langchain = "^0.0.348"
+huggingface-hub = "^0.19.4"
+transformers = "^4.35.2"
 Faker = "^20.1.0"
 #torch = "^2.1.1"
 
-#sentence-transformers = "^2.2.2"
+sentence-transformers = "^2.2.2"
 # bitsandbytes = "^0.41.3"
 # accelerate = "^0.25.0"
 
