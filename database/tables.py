@@ -1,6 +1,6 @@
 from datetime import datetime
 import uuid
-from sqlalchemy import  JSON, Column, String,TIMESTAMP,Integer
+from sqlalchemy import  JSON, Column, String,TIMESTAMP,Integer, text
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, declarative_base,Mapped
@@ -27,7 +27,6 @@ class Users(Base):
     created_at = Column(TIMESTAMP,default=datetime.now())
     updated_at = Column(TIMESTAMP,default=datetime.now())
     
-    
     medias:Mapped[List["Medias"]] = relationship("Medias",)
     chats:Mapped[List["Chats"]] = relationship("Chats",secondary="medias",overlaps="medias")
     collections:Mapped[List["PgCollections"]] = relationship("PgCollections",secondary="user_collections",overlaps="collections")
@@ -46,6 +45,7 @@ class MediaTypes(Base):
 class Tasks(Base):
     __tablename__ = "tasks"
     id = Column(Integer,primary_key=True)
+    
     name=Column(String,nullable=False)
     
     chats:Mapped[List["Chats"]] = relationship("Chats")
@@ -135,5 +135,6 @@ class Messages(Base):
     chat:Mapped["Chats"] =relationship("Chats",overlaps="messages,chats,chats,chats")
     media:Mapped["Medias"] =relationship("Medias",secondary="chats",overlaps="chat,messages,media,user,chats,chats,chats")
 
-    
+
+
 Base.metadata.create_all(bind=engine)

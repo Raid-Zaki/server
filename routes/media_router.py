@@ -5,7 +5,6 @@ from database.connection import get_db
 from models.medias import UploadForm, UserQuery
 from pydantic import  Json
 from sqlalchemy.orm import Session
-
 from models.users import User
 from repositories.auth_repository import AuthRepository
 
