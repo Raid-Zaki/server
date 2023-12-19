@@ -1,8 +1,8 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, UploadFile, status,File,Form
+from fastapi import APIRouter, Depends, UploadFile, status,Form
 from controllers.media_controller import MediaController
 from database.connection import get_db
-from models.medias import UploadForm
+from models.medias import UploadForm, UserQuery
 from pydantic import  Json
 from sqlalchemy.orm import Session
 
@@ -14,5 +14,8 @@ router = APIRouter(tags=["medias"])
 
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
 async def upload_media(data:Annotated[Json[UploadForm], Form()],db: Annotated[Session, Depends(get_db)],user:Annotated[User,Depends(AuthRepository().get_current_user)],file: UploadFile = None ):
-    
-    return await MediaController.upload_media(data=data,db=db,user=user,file=file)
+    result= await MediaController.upload_media(data=data,db=db,user=user,file=file)
+    return result
+@router.post("/query",status_code=status.HTTP_201_CREATED)
+async def query(query:UserQuery, db:Annotated[Session,Depends(get_db)],user:Annotated[User,Depends(AuthRepository().get_current_user)]):
+    return await  MediaController.query(query=query,db=db,user=user)

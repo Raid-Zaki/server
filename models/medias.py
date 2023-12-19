@@ -1,9 +1,9 @@
 
 
 from pydantic import BaseModel, model_validator
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import UploadFile
+
 
 from database.connection import get_db
 from database.tables import MediaTypes
@@ -21,6 +21,8 @@ class UploadForm (BaseModel):
         return self
         
     
+class UserQuery(BaseModel):
+    query:str 
     
     
     

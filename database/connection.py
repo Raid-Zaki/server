@@ -6,16 +6,16 @@ from sqlalchemy_utils import database_exists, create_database
 import dotenv
 
 dotenv.load_dotenv()
-SQLALCHEMY_DATABASE_URL = "postgresql://{}:{}@{}:{}/{}".format(os.getenv("DB_USER")
+DATABASE_URL = "postgresql://{}:{}@{}:{}/{}".format(os.getenv("DB_USER")
                                                                ,os.getenv("DB_PASSWORD")
                                                                ,os.getenv("DB_HOST")
                                                                ,os.getenv("DB_PORT"),
                                                                 os.getenv("DB_NAME"))
-if(not database_exists(SQLALCHEMY_DATABASE_URL)):
-    create_database(SQLALCHEMY_DATABASE_URL)
+if(not database_exists(DATABASE_URL)):
+    create_database(DATABASE_URL)
 
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 def get_db():
