@@ -74,7 +74,7 @@ class Medias(Base):
 
 class PgCollections(Base):
     __tablename__ = "langchain_pg_collection"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     name=Column(String,nullable=False)
     cmetadata=Column(JSON,nullable=True)
     embeddings:Mapped[List["PgEmbeddings"]] = relationship("PgEmbeddings")
@@ -85,11 +85,11 @@ class UserCollections(Base):
     __tablename__ = "user_collections"
    
     user_id = Column(Integer,ForeignKey("users.id"),primary_key=True)
-    pg_collection_id = Column(UUID(as_uuid=True),ForeignKey("langchain_pg_collection.id"),primary_key=True)
+    pg_collection_id = Column(UUID(as_uuid=True),ForeignKey("langchain_pg_collection.uuid"),primary_key=True)
     created_at = Column(TIMESTAMP,default=datetime.now())
     updated_at = Column(TIMESTAMP,default=datetime.now())
     
-    pgCollection:Mapped["PgCollections"] = relationship("PgCollections" )
+    pgCollection:Mapped["PgCollections"] = relationship("PgCollections",overlaps="collections" )
     user:Mapped["Users"] = relationship("Users",overlaps="collections,userCollections")
 
     
@@ -97,8 +97,8 @@ class UserCollections(Base):
 class PgEmbeddings(Base):
     
     __tablename__ = "langchain_pg_embedding"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    collection_id = Column(UUID(as_uuid=True),ForeignKey("langchain_pg_collection.id"))
+    uuid = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    collection_id = Column(UUID(as_uuid=True),ForeignKey("langchain_pg_collection.uuid"))
     embedding=Column(Vector,nullable=False)
     document=Column(String,nullable=False)
     cmetadata=Column(JSON,nullable=True)

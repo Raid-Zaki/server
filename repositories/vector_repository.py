@@ -2,9 +2,13 @@ from fastapi import UploadFile
 from langchain.document_loaders import PyPDFLoader,TextLoader
 from langchain.text_splitter import SentenceTransformersTokenTextSplitter,RecursiveCharacterTextSplitter,CharacterTextSplitter,TokenTextSplitter
 from database.connection import DATABASE_URL
+from models.medias import UploadForm
 from models.users import User
+from repositories.media_repository import MediaRepository
 from utils.enums import Embedders, Splitters
 from langchain.vectorstores.pgvector import PGVector
+from database.tables import Medias
+from sqlalchemy.orm import Session
 import uuid 
 import os
 import dotenv
@@ -15,6 +19,7 @@ class VectorRepository:
     
     def __init__(self,media:UploadFile,user:User, spliter:Splitters=Splitters.RECURSIVE,embedder_name:Embedders=Embedders.FLAN_SMALL):
         self.__media = media
+        self.user=user
         self.__model_name=embedder_name.value
         (self.__loader,self.path)=self.__loader_factory()
         self.__document_splitter = self.__splitter_factory(spliter)
@@ -22,10 +27,10 @@ class VectorRepository:
         self.__db=PGVector(connection_string=DATABASE_URL,embedding_function=self.__embedder,collection_name=str(user.id))
         
         
-    async def  embedd(self):
+    async def  embedd(self,db:Session,data:UploadForm):
+        media=MediaRepository.create(data=data,user=self.user,db=db)
         documents = self.__loader.load_and_split(self.__document_splitter)
-        ids= self.__db.aadd_documents(documents)
-        print(ids)
+        ids= await self.__db.aadd_documents(documents,ids=[media.id])
         return True
     
     def query(self,query:str,user:User):
