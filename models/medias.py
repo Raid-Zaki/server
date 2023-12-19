@@ -21,6 +21,8 @@ class UploadForm (BaseModel):
         return self
         
     
+class UserQuery(BaseModel):
+    query:str 
     
     
     

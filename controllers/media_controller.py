@@ -1,6 +1,6 @@
 from fastapi import UploadFile
 from fastapi.responses import JSONResponse
-from models.medias import UploadForm
+from models.medias import UploadForm, UserQuery
 from sqlalchemy.orm import Session
 
 from models.users import User
@@ -15,4 +15,8 @@ class MediaController:
         await vecotor_repo.embedd(db=db,data=data)
         return JSONResponse({"status":"ok"},background=vecotor_repo.delete_temp_file)
        
+    @staticmethod
+    async def query(query:UserQuery,user:User,db:Session):
+       
+        return await VectorRepository.query(query.query,user,db)
         

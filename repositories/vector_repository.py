@@ -7,7 +7,6 @@ from models.users import User
 from repositories.media_repository import MediaRepository
 from utils.enums import Embedders, Splitters
 from langchain.vectorstores.pgvector import PGVector
-from database.tables import Medias
 from sqlalchemy.orm import Session
 import uuid 
 import os
@@ -24,19 +23,25 @@ class VectorRepository:
         (self.__loader,self.path)=self.__loader_factory()
         self.__document_splitter = self.__splitter_factory(spliter)
         self.__embedder = models[embedder_name.value]
-        self.__db=PGVector(connection_string=DATABASE_URL,embedding_function=self.__embedder,collection_name=str(user.id))
-        
+        self.__vector_db=PGVector(connection_string=DATABASE_URL,embedding_function=self.__embedder,collection_name=str(user.id))
         
     async def  embedd(self,db:Session,data:UploadForm):
         media=MediaRepository.create(data=data,user=self.user,db=db)
         documents = self.__loader.load_and_split(self.__document_splitter)
-        ids= await self.__db.aadd_documents(documents,ids=[media.id])
+        await self.__vector_db.aadd_documents(documents,ids=[media.id])
         return True
     
-    def query(self,query:str,user:User):
-        return self.__db.similarity_search_with_score(query=query,k=5)
+    
+    async def query(query:str,user:User,db:Session):
+        
+        # a function to infer the model used based on the user task
+        
+        db=PGVector(connection_string=DATABASE_URL,embedding_function=models[Embedders.FLAN_SMALL.value],collection_name=str(user.id))
+        return await db.asimilarity_search_with_score(query=query,k=5)
     async def delete_temp_file(self):
         os.remove(self.path)
+        
+
         
         
         
