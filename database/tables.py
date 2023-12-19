@@ -1,9 +1,12 @@
 from datetime import datetime
-from sqlalchemy import Column, String,TIMESTAMP,Integer
+import uuid
+from sqlalchemy import  JSON, Column, String,TIMESTAMP,Integer
 from sqlalchemy import ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, declarative_base,Mapped
 from database.connection import Base, engine
 from typing import List
+from pgvector.sqlalchemy import Vector
 
 
 
@@ -14,7 +17,7 @@ class Posts(Base):
     title = Column(String)
     description = Column(String)
    
-    
+
 class Users(Base):
     __tablename__ = "users"
     id = Column(Integer ,primary_key=True)
@@ -24,8 +27,13 @@ class Users(Base):
     created_at = Column(TIMESTAMP,default=datetime.now())
     updated_at = Column(TIMESTAMP,default=datetime.now())
     
+    
     medias:Mapped[List["Medias"]] = relationship("Medias",)
     chats:Mapped[List["Chats"]] = relationship("Chats",secondary="medias",overlaps="medias")
+    collections:Mapped[List["PgCollections"]] = relationship("PgCollections",secondary="user_collections",overlaps="collections")
+  
+
+    
     
 class MediaTypes(Base):
     __tablename__ = "media_types"
@@ -46,12 +54,11 @@ class Medias(Base):
     "table name"
     __tablename__ = "medias"
     "ids"
-    id = Column(Integer,primary_key=True)
+    id = Column(UUID(as_uuid=True),primary_key=True,default=uuid.uuid4, index=True)
     user_id = Column(Integer,ForeignKey("users.id"))
     media_type_id = Column(Integer,ForeignKey("media_types.id"))
     
     " fields"
-    content = Column(String,nullable=False)
     title=Column(String,nullable=False)
     "time stamps"
     created_at = Column(TIMESTAMP,default=datetime.now())
@@ -61,7 +68,44 @@ class Medias(Base):
     chats:Mapped[List["Chats"]] = relationship("Chats",overlaps="chats,chats")
     mediaType:Mapped["MediaTypes"]=relationship("MediaTypes",overlaps="chats,medias")
     
+    embeddings:Mapped[List["PgEmbeddings"]] = relationship("PgEmbeddings")
     
+    
+
+class PgCollections(Base):
+    __tablename__ = "langchain_pg_collection"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    name=Column(String,nullable=False)
+    cmetadata=Column(JSON,nullable=True)
+    embeddings:Mapped[List["PgEmbeddings"]] = relationship("PgEmbeddings")
+    
+
+class UserCollections(Base):
+    
+    __tablename__ = "user_collections"
+   
+    user_id = Column(Integer,ForeignKey("users.id"),primary_key=True)
+    pg_collection_id = Column(UUID(as_uuid=True),ForeignKey("langchain_pg_collection.id"),primary_key=True)
+    created_at = Column(TIMESTAMP,default=datetime.now())
+    updated_at = Column(TIMESTAMP,default=datetime.now())
+    
+    pgCollection:Mapped["PgCollections"] = relationship("PgCollections" )
+    user:Mapped["Users"] = relationship("Users",overlaps="collections,userCollections")
+
+    
+    
+class PgEmbeddings(Base):
+    
+    __tablename__ = "langchain_pg_embedding"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    collection_id = Column(UUID(as_uuid=True),ForeignKey("langchain_pg_collection.id"))
+    embedding=Column(Vector,nullable=False)
+    document=Column(String,nullable=False)
+    cmetadata=Column(JSON,nullable=True)
+    #"custom_id" is a custom id will be used for the media_id
+    custom_id= Column(UUID(as_uuid=True),ForeignKey("medias.id"))
+    collection:Mapped["PgCollections"] = relationship("PgCollections",overlaps="embeddings")
+    media:Mapped["Medias"] = relationship("Medias",overlaps="embeddings")
 
 
 class Chats(Base):
@@ -90,7 +134,6 @@ class Messages(Base):
     
     chat:Mapped["Chats"] =relationship("Chats",overlaps="messages,chats,chats,chats")
     media:Mapped["Medias"] =relationship("Medias",secondary="chats",overlaps="chat,messages,media,user,chats,chats,chats")
-    # user:Mapped["Users"] =relationship("Users",secondary="medias")
 
-
+    
 Base.metadata.create_all(bind=engine)

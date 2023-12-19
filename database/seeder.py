@@ -46,7 +46,6 @@ def seed_medias(session: Session, num_medias=10):
         media = Medias(
             user_id=fake.random_element(session.query(Users.id).all())[0],
             media_type_id=fake.random_element(session.query(MediaTypes.id).all())[0],
-            content=fake.text(),
             title=fake.text(max_nb_chars=20),
         )
         medias.append(media)

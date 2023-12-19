@@ -24,7 +24,8 @@ class VectorRepository:
         
     async def  embedd(self):
         documents = self.__loader.load_and_split(self.__document_splitter)
-        await self.__db.aadd_documents(documents)
+        ids= self.__db.aadd_documents(documents)
+        print(ids)
         return True
     
     def query(self,query:str,user:User):
