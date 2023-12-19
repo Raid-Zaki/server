@@ -10,6 +10,7 @@ dotenv.load_dotenv()
 models={}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    
     # Load the ML model
     models[Embedders.FLAN_SMALL.value]=HuggingFaceBgeEmbeddings(model_name=Embedders.FLAN_SMALL.value,cache_folder=os.getenv("CACHE_FOLDER"))
     yield

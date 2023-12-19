@@ -18,5 +18,5 @@ class MediaController:
     @staticmethod
     async def query(query:UserQuery,user:User,db:Session):
        
-        return await VectorRepository.query(query.query,user,db)
+        return await VectorRepository.query(query,user,db)
         

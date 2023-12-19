@@ -23,6 +23,7 @@ class UploadForm (BaseModel):
     
 class UserQuery(BaseModel):
     query:str 
+    media_id:str
     
     
     
