@@ -16,7 +16,7 @@ from app import models
 class VectorRepository:
    
     
-    def __init__(self,media:UploadFile,user:User, spliter:Splitters=Splitters.CHAR,embedder_name:Embedders=Embedders.FLAN_SMALL):
+    def __init__(self,media:UploadFile,user:User, spliter:Splitters=Splitters.RECURSIVE,embedder_name:Embedders=Embedders.FLAN_SMALL):
         self.__media = media
         self.user=user
         self.__model_name=embedder_name.value
@@ -24,11 +24,11 @@ class VectorRepository:
         self.__document_splitter = self.__splitter_factory(spliter)
         self.__embedder = models[embedder_name.value]
         
-    async def  embedd(self,db:Session,data:UploadForm):
+    async def embedd(self,db:Session,data:UploadForm):
         media=MediaRepository.create(data=data,user=self.user,db=db)
         vector_db=PGVector(connection_string=DATABASE_URL,embedding_function=self.__embedder,collection_name=str(media.id))
         documents = self.__loader.load_and_split(self.__document_splitter)
-        await vector_db.aadd_documents(documents,ids=[media.id])
+        await vector_db.aadd_documents(documents,ids=[media.id for _ in range(len(documents))])
         return media.id
     
     
