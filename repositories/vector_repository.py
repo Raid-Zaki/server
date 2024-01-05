@@ -16,7 +16,7 @@ from app import models
 class VectorRepository:
    
     
-    def __init__(self,media:UploadFile,user:User, spliter:Splitters=Splitters.RECURSIVE,embedder_name:Embedders=Embedders.FLAN_SMALL):
+    def __init__(self,media:UploadFile,user:User, spliter:Splitters=Splitters.SENTENCE,embedder_name:Embedders=Embedders.FLAN_SMALL):
         self.__media = media
         self.user=user
         self.__model_name=embedder_name.value
@@ -57,9 +57,10 @@ class VectorRepository:
     
     def __splitter_factory(self,spliter:Splitters):
         if spliter == Splitters.SENTENCE:
-            return SentenceTransformersTokenTextSplitter(
+            return SentenceTransformersTokenTextSplitter(            
                 tokens_per_chunk=10,
-                model_name=self.__model_name)
+                # model_name=self.__model_name
+                )
         elif spliter == Splitters.RECURSIVE:
             return RecursiveCharacterTextSplitter()
         elif spliter == Splitters.CHAR:
