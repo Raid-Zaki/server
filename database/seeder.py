@@ -27,9 +27,9 @@ def seed_users(session: Session, num_users=5):
  
   
 def seed_media_types(session: Session):
-    image_type = MediaTypes(name="Image")
+    document_type = MediaTypes(name="Document")
     video_type = MediaTypes(name="Video")
-    session.add_all([image_type, video_type])
+    session.add_all([document_type, video_type])
     session.commit()
 
 
@@ -87,7 +87,11 @@ def seed_data():
         seed_medias(db)
         seed_chats(db)
         seed_chat_messages(db)
-
+        print("Successefully Seeded")
+    
+    except Exception as e:
+        print("error while seeding", e)
+    
     finally:
         db.close()
 

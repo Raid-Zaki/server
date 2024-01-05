@@ -16,7 +16,7 @@ from app import models
 class VectorRepository:
    
     
-    def __init__(self,media:UploadFile,user:User, spliter:Splitters=Splitters.RECURSIVE,embedder_name:Embedders=Embedders.FLAN_SMALL):
+    def __init__(self,media:UploadFile,user:User, spliter:Splitters=Splitters.CHAR,embedder_name:Embedders=Embedders.FLAN_SMALL):
         self.__media = media
         self.user=user
         self.__model_name=embedder_name.value
@@ -29,12 +29,12 @@ class VectorRepository:
         vector_db=PGVector(connection_string=DATABASE_URL,embedding_function=self.__embedder,collection_name=str(media.id))
         documents = self.__loader.load_and_split(self.__document_splitter)
         await vector_db.aadd_documents(documents,ids=[media.id])
-        return True
+        return media.id
     
     
     async def query(query:UserQuery,user:User,db:Session):
         
-        # a function to infer the model used based on the user task
+        # a functionto infer the model used based on the user task
 
         
         db=PGVector(connection_string=DATABASE_URL,embedding_function=models[Embedders.FLAN_SMALL.value],collection_name=query.media_id)
@@ -69,8 +69,12 @@ class VectorRepository:
     
 
     def __save_file(self,file_type)->str:
+
+        if not os.path.exists("temp"):
+            os.makedirs("temp")
+
         path="temp/{}".format(str(uuid.uuid4())+file_type)
-        with open(path,"wb") as f:
+        with open(path,"wb+") as f:
             f.write(self.__media.file.read())
         return path
        

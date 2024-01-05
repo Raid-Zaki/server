@@ -13,8 +13,8 @@ if __name__ == "__main__":
     
     cache_dir=os.getenv("CACHE_FOLDER")
     models=[Embedders.FLAN_SMALL]
-    if not os.path.exists(cache_dir):
-        os.chmod(cache_dir,0o777)
+    if os.path.exists(cache_dir):
+        # os.chmod(cache_dir,0o777)
         os.rmdir(cache_dir)
 
     for model in models:

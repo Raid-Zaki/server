@@ -30,6 +30,7 @@ python-jose = "^3.3.0"
 cryptography = "^41.0.5"
 annotated-types = "^0.6.0"
 python-multipart = "^0.0.6"
+pypdf = "^3.17.4"
 
 
 [build-system]
