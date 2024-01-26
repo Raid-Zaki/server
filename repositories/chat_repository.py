@@ -5,7 +5,9 @@ from langchain_core.runnables import  RunnablePassthrough
 from langchain.llms.huggingface_hub import HuggingFaceHub
 from database.tables import Chats, Messages
 from forms.chat_query import ChatQuery
+from forms.upload_form import UploadForm
 from models.message import Message
+from repositories.services.summary_service import SummaryService
 from repositories.vector_repository import VectorRepository
 from sqlalchemy.orm import Session
 from langchain.chains import ConversationalRetrievalChain
@@ -13,7 +15,9 @@ from langchain.memory import ChatMessageHistory,ConversationBufferMemory
 
 
 import dotenv
-import os 
+import os
+
+from utils.model_selector import ModelSelector 
 
 dotenv.load_dotenv()
 
@@ -23,18 +27,22 @@ class ChatRepository:
     @staticmethod
     async def resolve_chat_query(query:ChatQuery,id:int,db:Session)->Message:
         chat=db.query(Chats).filter(Chats.id==id).first()
-        messages=chat.messages
-        if len(chat.messages)==0:
-            return await ChatRepository.__chat_creation_template(query,id,db)
-        else:
-            return await ChatRepository.__chat_history_template(query,id,db,messages)
+        
+        if chat.task.name=="Chat":
+            messages=chat.messages
+            if len(chat.messages)==0:
+                return await ChatRepository.__chat_creation_template(query,id,db)
+            else:
+                return await ChatRepository.__chat_history_template(query,id,db,messages)
+        else :
+            return SummaryService.summarize(id,db,ChatRepository.__get_chat_model())
 
 
 
     @staticmethod 
     async def __chat_creation_template(query:ChatQuery,id:int,db:Session)->Message:
         model = ChatRepository.__get_chat_model()
-        retriever =await  VectorRepository.query(query.query, id, db)
+        retriever =await  VectorRepository.get_retreiver(query.query, id, db)
         template = """Answer the question based only on the following context:
         {context}
 
@@ -54,7 +62,7 @@ class ChatRepository:
     @staticmethod 
     async def __chat_history_template(query:ChatQuery,id:int,db:Session,messages:list[Messages])->Message:
         history=ChatRepository.__prepare_history(messages)
-        retriever =await  VectorRepository.query(query.query, id, db)
+        retriever =await  VectorRepository.get_retreiver(query.query, id, db)
         memory = ConversationBufferMemory(memory_key="chat_history", chat_memory=history,return_messages=True,output_key='answer')
         template = """Given the following conversation history and the context given , do your best to answer the human question:
         Useful Informations:
@@ -68,6 +76,7 @@ class ChatRepository:
             input_variables=["chat_history", "question"], 
             template=template
         )
+        print("@@@@@@@@@@@@@@@")
         model=ChatRepository.__get_chat_model()
         qa = ConversationalRetrievalChain.from_llm(
         llm=model,
@@ -91,11 +100,13 @@ class ChatRepository:
         
         
     @staticmethod 
-    def __get_chat_model():
+    def __get_chat_model(task=None):
+        
+        selector=ModelSelector()
         model = HuggingFaceHub(
         huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"),
-        repo_id="mistralai/Mixtral-8x7B-Instruct-v0.1",
-        task="text-generation",
+        repo_id=selector.select_model(task),
+        task=selector.to_hg_task(task),
         model_kwargs={
             "max_new_tokens": 250,
             "top_k": 30,
@@ -103,6 +114,7 @@ class ChatRepository:
             "repetition_penalty": 1.03,
         },
         )
+      
         return model
     
     @staticmethod 
@@ -112,6 +124,14 @@ class ChatRepository:
         db.commit()
         db.refresh(chat_message) 
         return Message.model_validate(chat_message) 
+    
+    @staticmethod 
+    def create_chat(data:UploadForm,db:Session,media_id:int=None)->Chats:
+        chat=Chats(media_id=media_id,task_id=data.task_id)
+        db.add(chat)
+        db.commit()
+        db.refresh(chat)
+        return chat
         
 
       

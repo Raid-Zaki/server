@@ -8,7 +8,7 @@ from forms.upload_form import UploadForm
 
 from models.user import User
 from repositories.media_repository import MediaRepository
-from utils.enums import Embedders, Splitters
+from utils.enums import  Splitters
 from langchain.vectorstores.pgvector import PGVector
 from langchain.embeddings import HuggingFaceInferenceAPIEmbeddings
 
@@ -17,17 +17,20 @@ import uuid
 import os
 import dotenv
 from langchain_core.vectorstores import VectorStoreRetriever
+
+from utils.model_selector import ModelSelector
 dotenv.load_dotenv()
 class VectorRepository:
    
     
-    def __init__(self,media:UploadFile,user:User, spliter:Splitters=Splitters.RECURSIVE,embedder_name:Embedders=Embedders.FLAN_SMALL):
+    __api_key=os.getenv("HUGGINGFACEHUB_API_TOKEN")
+    def __init__(self,media:UploadFile,user:User, spliter:Splitters=Splitters.RECURSIVE):
         self.__media = media
         self.user=user
-        self.__model_name="meta-llama/Llama-2-7b-hf"
+        self.__model_name=ModelSelector().select_model()
         (self.__loader,self.path)=self.__loader_factory()
         self.__document_splitter = self.__splitter_factory(spliter)
-        self.__embedder = HuggingFaceInferenceAPIEmbeddings(model=self.__model_name,api_key=os.getenv("HUGGINGFACEHUB_API_TOKEN"))
+        self.__embedder = HuggingFaceInferenceAPIEmbeddings(model=self.__model_name,api_key=VectorRepository.__api_key)
         
     async def  embedd(self,db:Session,data:UploadForm)->Medias:
       
@@ -38,23 +41,24 @@ class VectorRepository:
         return media
     
     
-    
-    async def query(query:ChatQuery,id:int,db:Session)->VectorStoreRetriever:
+    async def get_retreiver(query:ChatQuery,id:int,db:Session)->VectorStoreRetriever:
         
         # a function to infer the model used based on the user task
         chat=db.query(Chats).filter(Chats.id==id).first()
-        embedder=HuggingFaceInferenceAPIEmbeddings(model="meta-llama/Llama-2-7b-hf",api_key=os.getenv("HUGGINGFACEHUB_API_TOKEN"))
+        embedder=HuggingFaceInferenceAPIEmbeddings(model=ModelSelector().select_model(chat.task),api_key=VectorRepository.__api_key)
         db=PGVector(connection_string=DATABASE_URL,embedding_function=embedder,collection_name=str(chat.media_id))
         return db.as_retriever()
     
     
+    def get_vector_store(id:int,db:Session):
+        chat=db.query(Chats).filter(Chats.id==id).first()
+        embedder=HuggingFaceInferenceAPIEmbeddings(model=ModelSelector().select_model(chat.task),api_key= VectorRepository.__api_key)
+        vector_store=PGVector(connection_string=DATABASE_URL,embedding_function=embedder,collection_name=str(chat.media_id))
+        return vector_store
     
-    
-    
+
     async def delete_temp_file(self):
         os.remove(self.path)
-        
-
         
         
         
@@ -66,6 +70,17 @@ class VectorRepository:
             path= self.__save_file(".txt")
             file_loader= TextLoader(file_path=path)
         return (file_loader,path)
+    
+    
+    @staticmethod
+    def  save_and_get_doc_loader(file:UploadFile)->TextLoader|PyPDFLoader:
+        if file.content_type == "application/pdf":
+            path= VectorRepository.save_file(file,".pdf")
+            file_loader=PyPDFLoader(file_path=path)
+        else :
+            path= VectorRepository.save_file(".txt")
+            file_loader= TextLoader(file_path=path)
+        return file_loader
     
     def __splitter_factory(self,spliter:Splitters):
         if spliter == Splitters.SENTENCE:
@@ -86,7 +101,14 @@ class VectorRepository:
             f.write(self.__media.file.read())
         return path
        
-            
+    @staticmethod 
+    def save_file(file:UploadFile,file_type:str)->str:
+        
+        path="temp/{}".format(str(uuid.uuid4())+file_type)
+        with open(path,"wb") as f:
+            f.write(file.read())
+        return path
+       
         
             
             
