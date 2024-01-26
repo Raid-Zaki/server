@@ -123,7 +123,7 @@ class Chats(Base):
     
     media:Mapped["Medias"]=relationship("Medias",overlaps="chats,chats,chats")
     user:Mapped["Users"]=relationship("Users",secondary="medias",overlaps="chats,media,chats,user,medias")
-    messages:Mapped[List["Messages"]] =relationship("Messages",order_by="desc(Messages.updated_at)")
+    messages:Mapped[List["Messages"]] =relationship("Messages")
     task:Mapped["Tasks"]=relationship("Tasks",overlaps="chats")
     
 class Messages(Base):

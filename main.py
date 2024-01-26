@@ -6,7 +6,7 @@ from routes.media_router import router as media_router
 from routes.chat_router import router as chat_router
 from responses.core import HealthResponse
 
-from fastapi_pagination import  add_pagination
+from fastapi_pagination import  add_pagination,paginate,Page
 
 app = FastAPI(lifespan=lifespan)
 origins = ["*"]

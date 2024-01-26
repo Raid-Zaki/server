@@ -12,7 +12,6 @@ from models.user import User
 from repositories.auth_repository import AuthRepository
 from responses.chat import ChatResponse
 from fastapi_pagination.links import Page
-from fastapi_pagination import paginate
 from models.message import Message
 
 router=APIRouter(tags=["chats"])
@@ -24,14 +23,15 @@ async def user_query(chatQuery:ChatQuery,db:Annotated[Session,Depends(get_db)],i
 @router.get('/',response_model=Page[ChatResponse])
 async def user_chats(user:Annotated[User,Depends(AuthRepository().get_current_user)],db:Annotated[Session,Depends(get_db)]):
 
-    return paginate( await ChatController.history(user,db),)
+    return await ChatController.history(user,db)
 
 @router.get('/{id}',response_model=Page[Message])
 async def chat_history(user:Annotated[User,Depends(AuthRepository().get_current_user)],db:Annotated[Session,Depends(get_db)],id:int):
 
     result= await ChatController.chat_history(user,db,id)
     if result!=None:
-        return paginate( await ChatController.chat_history(user,db,id))
+        return result
+    
     raise  HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
