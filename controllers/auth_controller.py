@@ -1,9 +1,12 @@
 from datetime import timedelta
 from fastapi import HTTPException,status
 from sqlalchemy.orm import Session
-from models.auth import LoginForm, SignUpForm, SignUpResponse, Token
-from models.users import User
+from forms.auth import LoginForm, SignUpForm
+from models.auth import Token
+
+from models.user import User
 from repositories.auth_repository import AuthRepository
+from responses.auth import SignUpResponse
 class AuthController:
     auth_repository=AuthRepository()
     @staticmethod

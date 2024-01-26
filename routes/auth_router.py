@@ -2,9 +2,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from controllers.auth_controller import AuthController
 from database.connection import get_db
-from models.auth import LoginForm, Token ,SignUpResponse
-from models.users import User
+from forms.auth import LoginForm
+from models.auth import Token
+
+from models.user import User
 from repositories.auth_repository import *
+from responses.auth import SignUpResponse
 router = APIRouter(tags=["users"])
 
 @router.post("/login", response_model=Token)
