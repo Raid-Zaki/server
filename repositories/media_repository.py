@@ -1,6 +1,6 @@
 from database.tables import Medias
-from models.medias import UploadForm
-from models.users import User
+from forms.upload_form import UploadForm
+from models.user import User
 from sqlalchemy.orm import Session
 
 class MediaRepository:

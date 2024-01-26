@@ -9,7 +9,9 @@ import os
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from database.tables import Users
-from models.auth import SignUpForm, TokenData
+from forms.auth import SignUpForm
+from models.auth import TokenData
+
 from utils.form_helper import FormHelper
 
 

@@ -1,12 +1,15 @@
 from datetime import datetime
 import uuid
-from sqlalchemy import  JSON, Column, String,TIMESTAMP,Integer, text
+from sqlalchemy import  JSON, Column, String,TIMESTAMP,Integer
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship, declarative_base,Mapped
+from sqlalchemy.orm import relationship,Mapped
+from sqlalchemy.ext.declarative import  declarative_base
+from sqlalchemy.orm import relationship,Mapped
 from database.connection import Base, engine
 from typing import List
 from pgvector.sqlalchemy import Vector
+
 
 
 
@@ -27,6 +30,7 @@ class Users(Base):
     created_at = Column(TIMESTAMP,default=datetime.now())
     updated_at = Column(TIMESTAMP,default=datetime.now())
     
+    chats:Mapped[List["Chats"]] = relationship("Chats",secondary="medias",overlaps="chats")
     medias:Mapped[List["Medias"]] = relationship("Medias",)
     chats:Mapped[List["Chats"]] = relationship("Chats",secondary="medias",overlaps="medias")
     collections:Mapped[List["PgCollections"]] = relationship("PgCollections",secondary="user_collections",overlaps="collections")
@@ -120,7 +124,7 @@ class Chats(Base):
     media:Mapped["Medias"]=relationship("Medias",overlaps="chats,chats,chats")
     user:Mapped["Users"]=relationship("Users",secondary="medias",overlaps="chats,media,chats,user,medias")
     messages:Mapped[List["Messages"]] =relationship("Messages")
-    taks:Mapped["Tasks"]=relationship("Tasks",overlaps="chats")
+    task:Mapped["Tasks"]=relationship("Tasks",overlaps="chats")
     
 class Messages(Base):
     __tablename__ = "messages"
