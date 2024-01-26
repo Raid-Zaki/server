@@ -86,8 +86,8 @@ class ChatRepository:
         for message in messages:
             history.add_user_message(message.human_question)
             history.add_ai_message(message.bot_answer)
-
         return history
+        
         
         
     @staticmethod 
