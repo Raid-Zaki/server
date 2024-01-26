@@ -7,6 +7,7 @@ from forms.upload_form import UploadForm
 from models.chat import Chat
 
 from models.user import User
+from repositories.chat_repository import ChatRepository
 from repositories.vector_repository import VectorRepository
 
 
@@ -16,10 +17,7 @@ class MediaController:
     async def  upload_media(data: UploadForm,user:User, db: Session,file:UploadFile):
         vecotor_repo= VectorRepository(file,user)
         result=await vecotor_repo.embedd(db=db,data=data)
-        chat=Chats(media_id=result.id,task_id=data.task_id)
-        db.add(chat)
-        db.commit()
-        db.refresh(chat)
+        chat=ChatRepository.create_chat(data=data,db=db,media_id=result.id)
         media_title=chat.media.title
         task_name=chat.task.name
         title=media_title+"-"+task_name
@@ -29,5 +27,5 @@ class MediaController:
     @staticmethod
     async def query(query:ChatQuery,user:User,db:Session):
        
-        return await VectorRepository.query(query,user,db)
+        return await VectorRepository.get_retreiver(query,user,db)
         

@@ -1,12 +1,13 @@
 
 from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from pydantic import  BaseModel, field_serializer
 
 class Chat(BaseModel):
     id: int
-    media_id: UUID
+    media_id: Optional[UUID]=None
     task_id: int
     created_at: datetime
     updated_at: datetime
