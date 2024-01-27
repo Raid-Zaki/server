@@ -1,13 +1,11 @@
 from typing import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException,status
 from controllers.chat_controller import ChatController
 from database.connection import get_db
-
 from forms.chat_query import ChatQuery
 from sqlalchemy.orm import Session
-
 from fastapi import APIRouter, Depends
+from models.chat import Chat
 from models.user import User
 from repositories.auth_repository import AuthRepository
 from responses.chat import ChatResponse
@@ -36,4 +34,3 @@ async def chat_history(user:Annotated[User,Depends(AuthRepository().get_current_
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
 
-    
