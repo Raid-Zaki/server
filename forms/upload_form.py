@@ -13,7 +13,6 @@ class UploadForm (BaseModel):
     media_type_id: Annotated[int ,PositiveInt]
     title:str 
     task_id: Annotated[int ,PositiveInt]
-    title:str
     @model_validator(mode="after")
     def validate_media_type_id(self):
         db=next(get_db())

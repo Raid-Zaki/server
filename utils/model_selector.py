@@ -7,24 +7,28 @@ class ModelSelector():
     def __init__(self):
         pass 
     
-    def select_model(self,task:Tasks|Task=None)->str:
+    def select_model(self,task:Tasks|Task=None,source_lang:str="en",target_lang="ar")->str:
         if isinstance(task, Tasks) or isinstance(task, Task):
             task=task.name
         if task=="Summarization":
-            return "facebook/bart-large-cnn"
+            return "Falconsai/text_summarization"
         
-        elif task=="Translation":
-            return "Unbabel/TowerBase-7B-v0.1"
+        #elif task=="Translation":
+        #    return "mistralai/Mixtral-8x7B-Instruct-v0.1"
+        
         elif task=="Chat":
             return "mistralai/Mixtral-8x7B-Instruct-v0.1"
         
+        elif task=="Keyword-extraction":
+            return "transformer3/H1-keywordextractor"
+            
         return "mistralai/Mixtral-8x7B-Instruct-v0.1"
     
     
     def to_hg_task(self,task:Tasks|Task=None)->str:
         if isinstance(task, Tasks) or isinstance(task, Task):
             task=task.name
-        if task=="Summarization":
+        if task=="Summarization" or task=="Keyword-extraction":
             return "summarization"
         
         elif task=="translation":

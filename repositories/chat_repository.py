@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from langchain.prompts.prompt import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -7,12 +8,11 @@ from database.tables import Chats, Messages
 from forms.chat_query import ChatQuery
 from forms.upload_form import UploadForm
 from models.message import Message
-from repositories.services.summary_service import SummaryService
+from repositories.services.generic_one_prompt_service import GenericOnePromptService
 from repositories.vector_repository import VectorRepository
 from sqlalchemy.orm import Session
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ChatMessageHistory,ConversationBufferMemory
-
 
 import dotenv
 import os
@@ -28,14 +28,26 @@ class ChatRepository:
     async def resolve_chat_query(query:ChatQuery,id:int,db:Session)->Message:
         chat=db.query(Chats).filter(Chats.id==id).first()
         
-        if chat.task.name=="Chat":
+        task=chat.task.name
+        if task=="Chat":
             messages=chat.messages
             if len(chat.messages)==0:
                 return await ChatRepository.__chat_creation_template(query,id,db)
             else:
                 return await ChatRepository.__chat_history_template(query,id,db,messages)
         else :
-            return SummaryService.summarize(id,db,ChatRepository.__get_chat_model())
+            service=GenericOnePromptService(task=task)
+            model=ChatRepository.__get_chat_model(task=task,source_lang=query.source_language.value,target_lang=query.target_language.value)
+            if task=="Summarization" or task=="Keyword-extraction":
+                answer= service.handle(id,db,model=model)
+                return ChatRepository.create_or_update_message(answer,service.query_selector(),id,db)
+            else:
+                raise HTTPException(status_code=400,detail="Invalid task")
+                #if query.query==None:
+                #    raise HTTPException(status_code=400,detail="Query is required")
+                #answer= service.handle(id,db,model=model,chat_query=query)
+                #return ChatRepository.create_or_update_message(answer,service.query_selector(),id,db)
+            
 
 
 
@@ -76,7 +88,6 @@ class ChatRepository:
             input_variables=["chat_history", "question"], 
             template=template
         )
-        print("@@@@@@@@@@@@@@@")
         model=ChatRepository.__get_chat_model()
         qa = ConversationalRetrievalChain.from_llm(
         llm=model,
@@ -100,21 +111,20 @@ class ChatRepository:
         
         
     @staticmethod 
-    def __get_chat_model(task=None):
+    def __get_chat_model(task=None,temp=0.1,source_lang:str="en",target_lang:str="ar"):
         
         selector=ModelSelector()
         model = HuggingFaceHub(
         huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_API_TOKEN"),
-        repo_id=selector.select_model(task),
+        repo_id=selector.select_model(task,source_lang,target_lang),
         task=selector.to_hg_task(task),
         model_kwargs={
             "max_new_tokens": 250,
             "top_k": 30,
-            "temperature": 0.1,
+            "temperature": temp,
             "repetition_penalty": 1.03,
         },
         )
-      
         return model
     
     @staticmethod 
@@ -124,6 +134,19 @@ class ChatRepository:
         db.commit()
         db.refresh(chat_message) 
         return Message.model_validate(chat_message) 
+    
+    @staticmethod 
+    def create_or_update_message(answer:str,question:str,chat_id:int,db:Session)->Message:
+        message=db.query(Messages).filter(Messages.chat_id==chat_id).first()
+        if message ==None:
+            return ChatRepository.__create_message(answer, question, chat_id, db)
+        
+        update_query = {Messages.bot_answer: answer}
+        db.query(Messages).filter_by(id=message.id).update(update_query)
+        db.commit()
+        db.refresh(message)
+        return Message.model_validate(message)
+     
     
     @staticmethod 
     def create_chat(data:UploadForm,db:Session,media_id:int=None)->Chats:

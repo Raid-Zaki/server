@@ -1,5 +1,5 @@
 from fastapi import UploadFile
-from langchain.document_loaders import PyPDFLoader,TextLoader
+from langchain.document_loaders import TextLoader,PyPDFLoader
 from langchain.text_splitter import SentenceTransformersTokenTextSplitter,RecursiveCharacterTextSplitter,CharacterTextSplitter,TokenTextSplitter
 from database.connection import DATABASE_URL
 from database.tables import Chats, Medias
@@ -17,6 +17,7 @@ import uuid
 import os
 import dotenv
 from langchain_core.vectorstores import VectorStoreRetriever
+from langchain_core.documents import Document
 
 from utils.model_selector import ModelSelector
 dotenv.load_dotenv()
@@ -32,11 +33,13 @@ class VectorRepository:
         self.__document_splitter = self.__splitter_factory(spliter)
         self.__embedder = HuggingFaceInferenceAPIEmbeddings(model=self.__model_name,api_key=VectorRepository.__api_key)
         
-    async def  embedd(self,db:Session,data:UploadForm)->Medias:
+    async def embedd(self,db:Session,data:UploadForm)->Medias:
       
         media=MediaRepository.create(data=data,user=self.user,db=db)
         vector_db=PGVector(connection_string=DATABASE_URL,embedding_function=self.__embedder,collection_name=str(media.id))
+      
         documents = self.__loader.load_and_split(self.__document_splitter)
+        VectorRepository.clean_docs(documents)
         await vector_db.aadd_documents(documents,ids=[media.id for i in range(len(documents))])
         return media
     
@@ -61,14 +64,14 @@ class VectorRepository:
         os.remove(self.path)
         
         
-        
     def __loader_factory(self):
         if self.__media.content_type == "application/pdf":
             path= self.__save_file(".pdf")
-            file_loader=PyPDFLoader(file_path=path)
+            file_loader=PyPDFLoader(file_path=path,extract_images=True)
         else :
             path= self.__save_file(".txt")
             file_loader= TextLoader(file_path=path)
+    
         return (file_loader,path)
     
     
@@ -76,8 +79,9 @@ class VectorRepository:
     def  save_and_get_doc_loader(file:UploadFile)->TextLoader|PyPDFLoader:
         if file.content_type == "application/pdf":
             path= VectorRepository.save_file(file,".pdf")
-            file_loader=PyPDFLoader(file_path=path)
+            file_loader=PyPDFLoader(file_path=path,extract_images=True)
         else :
+            
             path= VectorRepository.save_file(".txt")
             file_loader= TextLoader(file_path=path)
         return file_loader
@@ -108,6 +112,14 @@ class VectorRepository:
         with open(path,"wb") as f:
             f.write(file.read())
         return path
+    
+    
+    @staticmethod
+    
+    def clean_docs(docs:list[Document]):
+        for doc in docs:
+            doc.page_content=doc.page_content.replace('\x00', '')
+        
        
         
             

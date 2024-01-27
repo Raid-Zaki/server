@@ -35,7 +35,7 @@ def seed_media_types(session: Session):
 
 def seed_tasks(session: Session):
     tasks = []
-    for task in ["Translation", "Summarization", "Chat"]:
+    for task in ["Translation", "Summarization", "Chat","Keyword-extraction"]:
         tasks.append(Tasks(name=task))
     session.add_all(tasks)
     session.commit()
