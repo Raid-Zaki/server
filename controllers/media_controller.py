@@ -16,7 +16,9 @@ class MediaController:
     @staticmethod
     async def  upload_media(data: UploadForm,user:User, db: Session,file:UploadFile):
         vecotor_repo= VectorRepository(file,user)
+        print("@@@@@@@@@@@@")
         result=await vecotor_repo.embedd(db=db,data=data)
+        print("##############")
         chat=ChatRepository.create_chat(data=data,db=db,media_id=result.id)
         media_title=chat.media.title
         task_name=chat.task.name
