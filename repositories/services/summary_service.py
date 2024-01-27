@@ -4,7 +4,7 @@ from langchain.chains.summarize import load_summarize_chain
 
 class SummaryService():
     
-    SUMMARY_QUERY="Write a precise  and concise summary of the following text:"
+    SUMMARY_QUERY="Write a precise  and concise summary yey informative and usefull of the following text:"
     @staticmethod 
     def summarize(chat_id:int,db:Session,model):
         vectordb = VectorRepository.get_vector_store(chat_id,db)

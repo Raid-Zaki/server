@@ -78,7 +78,6 @@ class ChatRepository:
             input_variables=["chat_history", "question"], 
             template=template
         )
-        print("@@@@@@@@@@@@@@@")
         model=ChatRepository.__get_chat_model()
         qa = ConversationalRetrievalChain.from_llm(
         llm=model,
@@ -116,7 +115,6 @@ class ChatRepository:
             "repetition_penalty": 1.03,
         },
         )
-      
         return model
     
     @staticmethod 
