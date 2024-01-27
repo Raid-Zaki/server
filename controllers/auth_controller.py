@@ -6,7 +6,7 @@ from models.auth import Token
 
 from models.user import User
 from repositories.auth_repository import AuthRepository
-from responses.auth import SignUpResponse
+from responses.auth import SignUpResponse, LoginResponse
 class AuthController:
     auth_repository=AuthRepository()
     @staticmethod
@@ -22,7 +22,7 @@ class AuthController:
         access_token = AuthController.auth_repository.create_access_token(
             data={"sub": user_data.cred}, expires_delta=access_token_expires
         )
-        return Token(access_token=access_token)
+        return LoginResponse(token=Token(access_token=access_token), user=user)
     
     @staticmethod
     def signup(user: SignUpForm, db: Session ):

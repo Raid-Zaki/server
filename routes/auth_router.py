@@ -7,10 +7,10 @@ from models.auth import Token
 
 from models.user import User
 from repositories.auth_repository import *
-from responses.auth import SignUpResponse
+from responses.auth import SignUpResponse, LoginResponse
 router = APIRouter(tags=["users"])
 
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=LoginResponse)
 async def login(form_data: LoginForm,db:Annotated[Session,Depends(get_db)]):
     return AuthController.login(user_data=form_data,db=db)
 

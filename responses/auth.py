@@ -4,6 +4,9 @@ from models.user import User
 
 
 
+class LoginResponse(BaseModel):
+    token:Token
+    user:User
 
 class SignUpResponse(BaseModel):
     user:User 
