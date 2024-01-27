@@ -15,7 +15,7 @@ from fastapi_pagination.links import Page
 from models.message import Message
 
 router=APIRouter(tags=["chats"])
-@router.post('/{id}')
+@router.post('/{id}',response_model=Message)
 async def user_query(chatQuery:ChatQuery,db:Annotated[Session,Depends(get_db)],id:int,user:Annotated[User,Depends(AuthRepository().get_current_user)]):
 
     return await ChatController.query(chatQuery,id,db)

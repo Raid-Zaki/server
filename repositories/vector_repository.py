@@ -32,7 +32,7 @@ class VectorRepository:
         self.__document_splitter = self.__splitter_factory(spliter)
         self.__embedder = HuggingFaceInferenceAPIEmbeddings(model=self.__model_name,api_key=VectorRepository.__api_key)
         
-    async def  embedd(self,db:Session,data:UploadForm)->Medias:
+    async def embedd(self,db:Session,data:UploadForm)->Medias:
       
         media=MediaRepository.create(data=data,user=self.user,db=db)
         vector_db=PGVector(connection_string=DATABASE_URL,embedding_function=self.__embedder,collection_name=str(media.id))
@@ -59,7 +59,6 @@ class VectorRepository:
 
     async def delete_temp_file(self):
         os.remove(self.path)
-        
         
         
     def __loader_factory(self):

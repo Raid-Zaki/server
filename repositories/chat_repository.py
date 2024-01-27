@@ -35,7 +35,8 @@ class ChatRepository:
             else:
                 return await ChatRepository.__chat_history_template(query,id,db,messages)
         else :
-            return SummaryService.summarize(id,db,ChatRepository.__get_chat_model())
+            summary= SummaryService.summarize(id,db,ChatRepository.__get_chat_model())
+            return ChatRepository.create_or_update_message(summary,SummaryService.SUMMARY_QUERY,id,db)
 
 
 
@@ -124,6 +125,19 @@ class ChatRepository:
         db.commit()
         db.refresh(chat_message) 
         return Message.model_validate(chat_message) 
+    
+    @staticmethod 
+    def create_or_update_message(answer:str,question:str,chat_id:int,db:Session)->Message:
+        message=db.query(Messages).filter(Messages.chat_id==chat_id).first()
+        if message ==None:
+            return ChatRepository.__create_message(answer, question, chat_id, db)
+        
+        update_query = {Messages.bot_answer: answer}
+        db.query(Messages).filter_by(id=message.id).update(update_query)
+        db.commit()
+        db.refresh(message)
+        return Message.model_validate(message)
+     
     
     @staticmethod 
     def create_chat(data:UploadForm,db:Session,media_id:int=None)->Chats:
