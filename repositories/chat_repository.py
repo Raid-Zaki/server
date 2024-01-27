@@ -12,8 +12,7 @@ from repositories.vector_repository import VectorRepository
 from sqlalchemy.orm import Session
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ChatMessageHistory,ConversationBufferMemory
-
-
+import random
 import dotenv
 import os
 
@@ -35,7 +34,9 @@ class ChatRepository:
             else:
                 return await ChatRepository.__chat_history_template(query,id,db,messages)
         else :
-            summary= SummaryService.summarize(id,db,ChatRepository.__get_chat_model())
+            random_temp=random.uniform(0.1, 0.9)
+            task="Summarization"
+            summary= SummaryService.summarize(id,db,ChatRepository.__get_chat_model(task=task,temp=random_temp))
             return ChatRepository.create_or_update_message(summary,SummaryService.SUMMARY_QUERY,id,db)
 
 
@@ -101,7 +102,7 @@ class ChatRepository:
         
         
     @staticmethod 
-    def __get_chat_model(task=None):
+    def __get_chat_model(task=None,temp=0.1):
         
         selector=ModelSelector()
         model = HuggingFaceHub(
@@ -111,7 +112,7 @@ class ChatRepository:
         model_kwargs={
             "max_new_tokens": 250,
             "top_k": 30,
-            "temperature": 0.1,
+            "temperature": temp,
             "repetition_penalty": 1.03,
         },
         )
